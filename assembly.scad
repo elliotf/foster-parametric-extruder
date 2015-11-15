@@ -12,6 +12,7 @@ module assembly() {
   % hole(filament_diam, motor_side*2, resolution);
 
   // idler screw
+  /*
   % translate([idler_nut_pos_x,idler_nut_pos_y,idler_nut_pos_z]) {
     rotate([90,0,0]) {
       hole(m3_nut_diam, 3, 6);
@@ -19,6 +20,11 @@ module assembly() {
         hole(m3_diam, 30, resolution);
       }
     }
+  }
+  */
+
+  translate([0,0,center_pos_z]) {
+    center();
   }
 
   if (show_drive_side) {
@@ -29,7 +35,7 @@ module assembly() {
     translate([0.05,0,0]) {
       position_drive_motor() {
         if (show_motors) {
-          % motor();
+          //% motor();
         }
 
         translate([0,0,drive_motor_x]) {
