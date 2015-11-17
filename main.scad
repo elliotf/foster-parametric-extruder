@@ -33,12 +33,13 @@ filament_opening_diam     = bowden_tubing_diam - 2;
 resolution                   = 32;
 
 extrusion_height = .3;
-extrusion_width  = .6;
+extrusion_width  = .5;
 
 // positions
 
 motor_x = motor_shaft_len/2 + motor_shoulder_height/2;
-motor_y = filament_diam/2 + hobbed_pulley_effective_diam/2;
+preload = 0.5;
+motor_y = filament_diam/2 + hobbed_pulley_effective_diam/2 - preload/2;
 motor_y = hobbed_pulley_diam/2;
 
 motor_screw_head_opening = m3_nut_diam + 0.5;
@@ -636,38 +637,99 @@ module bowden_retainer_void() {
 
 center_pos_z = 0;
 
-module center() {
-  hinge_diam  = 8;
-  hinge_gap   = 0.5;
-  hinge_retainer_wall_thickness = extrusion_width*4;
-  hinge_hole_diam     = hinge_diam + hinge_gap*2;
-  hinge_retainer_diam = hinge_hole_diam + hinge_retainer_wall_thickness * 2;
-  hinge_arm_thickness = hinge_diam * 0.75;
-  center_width = motor_x*2 - motor_shoulder_height*2;
-
-  hinge_pos_y = bowden_tubing_diam/2+extrusion_width*2+hinge_hole_diam/2;
-  hinge_pos_z = motor_side/2;
+module one_piece() {
+  hinge_gap_width = 2;
+  hinge_diam      = hinge_gap_width + extrusion_width*4;
+  hinge_gap_pos_y = bowden_retainer_inner/2 + hinge_diam/2;
+  hinge_gap_pos_z = motor_side/2 - hinge_gap_width/2 - extrusion_width*4;
+  center_width = motor_x*2;
 
   rounded_diam = 4;
 
-  bowden_retainer_pos = hinge_pos_z+hinge_hole_diam/2;
+  bowden_retainer_pos_z = hinge_pos_z+hinge_hole_diam/2;
+  bowden_retainer_pos_z = motor_side/2-8;
+
+  hobbed_pulley_clearance = hobbed_pulley_diam/2 + 0.5;
+
+  motor_shoulder_clearance = motor_shoulder_height*1.5;
+
+  screw_material_thickness = 7;
+  screw_head_diam          = 6;
+  body_rounded_diam = motor_side-motor_hole_spacing;
+
+  tensioner_nut_pos_x = -center_width/4;
+  tensioner_nut_pos_y = motor_y+motor_side/2;
+  tensioner_nut_pos_z = -motor_hole_spacing/2-3-6/2;
 
   module body() {
+    for(side=[front,rear]) {
+      hull() {
+        for(y=[left,right]) {
+          for(z=[top]) {
+            translate([0,y*(motor_y+motor_hole_spacing/2),z*motor_hole_spacing/2]) {
+              rotate([0,90,0]) {
+                hole(body_rounded_diam,center_width-2,resolution);
+                hole(body_rounded_diam-1,center_width,resolution);
+              }
+            }
+          }
+          /*
+          translate([-center_width/4,y*(motor_y+motor_hole_spacing/2),-motor_hole_spacing/2-body_rounded_diam/2]) {
+            rotate([0,90,0]) {
+              hole(body_rounded_diam,center_width/2-2,resolution);
+              hole(body_rounded_diam-1,center_width/2,resolution);
+            }
+          }
+          */
+        }
+        for(z=[bottom]) {
+          translate([-center_width/4,side*(motor_y+motor_hole_spacing/2),-motor_hole_spacing/2-body_rounded_diam/2]) {
+            rotate([0,90,0]) {
+              hole(body_rounded_diam,center_width/2-2,resolution);
+              hole(body_rounded_diam-1,center_width/2,resolution);
+            }
+          }
+          translate([0,side*(motor_y+motor_hole_spacing/2),z*motor_hole_spacing/2]) {
+            rotate([0,90,0]) {
+              hole(body_rounded_diam,center_width-2,resolution);
+              hole(body_rounded_diam-1,center_width,resolution);
+            }
+          }
+        }
+      }
+    }
+    /*
+    intersection() {
+      hull() {
+        for(side=[front,rear]) {
+          translate([0,motor_y*side,0]) {
+            rotate([0,90,0]) {
+              hole(motor_diam,center_width,resolution*2);
+            }
+          }
+        }
+      }
+      hull() {
+        for(side=[front,rear]) {
+          translate([0,motor_y*side,0]) {
+            cube([center_width+1,motor_side,motor_side],center=true);
+          }
+        }
+      }
+    }
+    */
+    /*
     hull() {
       for(diff=[0,1]) {
         for(side=[front,rear]) {
-          translate([0,hinge_pos_y*side,hinge_pos_z]) {
-            rotate([0,90,0]) {
-              hole(hinge_retainer_diam-diff,center_width-(1-diff)*2,resolution);
-            }
-          }
-
-          translate([0,side*(bowden_retainer_body_diam/2-rounded_diam/2),bowden_retainer_pos+8-rounded_diam/2]) {
+          // top of bowden
+          translate([0,side*(bowden_retainer_body_diam/2-rounded_diam/2),bowden_retainer_pos_z+8-rounded_diam/2]) {
             rotate([0,90,0]) {
               hole(rounded_diam-diff,center_width-(1-diff)*2,resolution);
             }
           }
 
+          // above hobbed pulleys
           translate([0,side*(bowden_tubing_diam/2+extrusion_width*2),hobbed_pulley_diam/2+rounded_diam/2+1]) {
             rotate([0,90,0]) {
               hole(rounded_diam-diff,center_width-(1-diff)*2,resolution);
@@ -676,17 +738,119 @@ module center() {
         }
       }
     }
+    */
   }
 
   module holes() {
-    translate([0,0,motor_side/2]) {
-      hole(bowden_tubing_diam,motor_side,8);
+    for(side=[front,rear]) {
+      translate([0,side*hinge_gap_pos_y,hinge_gap_pos_z]) {
+        hull() {
+          rotate([0,90,0]) {
+            hole(hinge_gap_width,center_width+1,resolution);
+          }
+          translate([0,0,-motor_side]) {
+            cube([center_width+1,hinge_gap_width,1],center=true);
+          }
+        }
+      }
+
+    }
+    translate([tensioner_nut_pos_x,tensioner_nut_pos_y,tensioner_nut_pos_z]) {
+      rotate([90,0,0]) {
+        hole(5.5,body_rounded_diam/2,6);
+        hole(3.2,motor_side*3,8);
+      }
     }
 
-    translate([0,0,bowden_retainer_pos]) {
+    translate([0,0,0]) {
+      hole(bowden_tubing_diam,motor_side*2,8);
+    }
+
+    translate([0,0,bowden_retainer_pos_z]) {
       bowden_retainer_void();
     }
 
+    translate([0,0,-motor_side/2]) {
+      cube([center_width+1,hinge_gap_pos_y*2,motor_side+hobbed_pulley_clearance*2],center=true);
+    }
+
+    for(y=[0,1]) {
+      mirror([0,y,0]) {
+        // round area by hobbed pulley
+        translate([0,hinge_gap_pos_y-hinge_gap_width/2,hobbed_pulley_clearance]) {
+          rotate([180,0,0]) {
+            rotate([0,90,0]) {
+              cut_rounded_corner(rounded_diam);
+            }
+          }
+        }
+        // round area by motor shoulder clearance
+        for(x=[left,right]) {
+          translate([center_width/2*x,hinge_gap_pos_y-hinge_gap_width/2,motor_shoulder_diam/2+0.5]) {
+            rotate([180,0,0]) {
+              rotate([0,90,0]) {
+                cut_rounded_corner(rounded_diam,motor_shoulder_clearance*2);
+              }
+            }
+          }
+        }
+        // round main opening
+        //translate([0,motor_y+motor_hole_spacing/2-body_rounded_diam/2,-motor_side/2-rounded_diam*1.5]) {
+        /*
+        translate([0,motor_y+motor_hole_spacing/2-body_rounded_diam/2,-motor_hole_spacing/2-body_rounded_diam]) {
+          rotate([90,0,0]) {
+            rotate([0,90,0]) {
+              cut_rounded_corner(body_rounded_diam);
+            }
+          }
+        }
+        */
+        /*
+        translate([0,hinge_gap_pos_y+hinge_gap_width/2,-motor_side/2]) {
+          rotate([90,0,0]) {
+            rotate([0,90,0]) {
+              cut_rounded_corner(rounded_diam);
+            }
+          }
+        }
+        */
+      }
+    }
+
+    for(side=[front,rear]) {
+      translate([side*center_width/2,0,0]) {
+        cube([motor_shoulder_clearance*2,hinge_gap_pos_y*2,motor_shoulder_diam+1],center=true);
+      }
+      translate([0,side*(motor_y),0]) {
+        translate([0,side*(motor_hole_spacing/2),0]) {
+          for(z=[top,bottom]) {
+            translate([screw_material_thickness*-side,0,z*motor_hole_spacing/2]) {
+              rotate([0,90,0]) {
+                hole(3.2, center_width*2, resolution/2);
+                hole(screw_head_diam, center_width, resolution/2);
+              }
+            }
+          }
+        }
+      }
+
+      intersection() {
+        translate([0,side*(hinge_gap_pos_y+motor_side/2),0]) {
+          cube([center_width+1,motor_side,motor_side],center=true);
+        }
+        translate([0,side*(motor_y),0]) {
+          rotate([0,90,0]) {
+            hole(motor_shoulder_diam+1,center_width+1,resolution*2);
+          }
+        }
+      }
+
+      translate([0,side*motor_y,-motor_hole_spacing/2]) {
+        cube([center_width+1,motor_hole_spacing-body_rounded_diam,motor_hole_spacing],center=true);
+      }
+    }
+
+    /*
     for(side=[front,rear]) {
       translate([center_width*0.25*side,hinge_pos_y*side,hinge_pos_z]) {
         rotate([0,90,0]) {
@@ -701,11 +865,41 @@ module center() {
         }
       }
     }
+    */
+  }
+
+  module bridges() {
+    support_depth = hinge_gap_pos_y*2-hinge_gap_width;
+    translate([-center_width/2,0,hobbed_pulley_clearance-5/2]) {
+      hull() {
+        for(y=[front,rear]) {
+          translate([motor_shoulder_clearance/2+extrusion_height/2,y*support_depth/2,0]) {
+            rotate([0,90,0]) {
+              hole(5,motor_shoulder_clearance+extrusion_height,resolution);
+            }
+          }
+        }
+      }
+
+      translate([motor_shoulder_clearance+extrusion_height/2,0,4]) {
+        cube([extrusion_height,support_depth,8],center=true);
+      }
+    }
+
+    for(z=[top,bottom]) {
+      translate([center_width/2-screw_material_thickness+extrusion_height/2,motor_y+motor_hole_spacing/2,z*motor_hole_spacing/2]) {
+        cube([extrusion_height,screw_head_diam+1,screw_head_diam+1],center=true);
+      }
+    }
   }
 
   difference() {
     body();
     holes();
+  }
+
+  color("lightblue") {
+    bridges();
   }
 }
 

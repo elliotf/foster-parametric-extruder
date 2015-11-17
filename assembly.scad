@@ -24,14 +24,10 @@ module assembly() {
   */
 
   translate([0,0,center_pos_z]) {
-    center();
+    one_piece();
   }
 
   if (show_drive_side) {
-    translate([drive_motor_x+0.05,drive_motor_y,drive_motor_z]) {
-      color("orange") drive_side();
-    }
-
     translate([0.05,0,0]) {
       position_drive_motor() {
         if (show_motors) {
@@ -46,13 +42,6 @@ module assembly() {
   }
 
   if (show_idler_side) {
-    translate([idler_motor_x-0.05,0,hinge_pos_z]) {
-      rotate([idler_assembly_angle,0,0]) {
-        translate([0,idler_motor_y,-hinge_pos_z]) {
-          color("lightblue") idler_side();
-        }
-      }
-    }
     translate([-0.05,0,0]) {
       position_idler_motor() {
         if (show_motors) {

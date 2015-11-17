@@ -5,7 +5,7 @@ show_idler_side = 1;
 show_bridges    = 1;
 show_motors     = 0;
 
-module plate() {
+module old_plate() {
   min_dist_between_parts = 5;
   translate([-motor_side/2-min_dist_between_parts,0,0]) {
     rotate([0,0,90]) {
@@ -20,6 +20,12 @@ module plate() {
         idler_side();
       }
     }
+  }
+}
+
+module plate() {
+  rotate([0,0,0]) {
+    one_piece();
   }
 }
 
