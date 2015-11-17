@@ -304,7 +304,7 @@ module idler_screw_holes() {
   }
 }
 
-module old_drive_side() {
+module drive_side() {
   drive_hinge_pos_y = -drive_motor_y + hinge_pos_y;
   main_height       = drive_side_height;
   filament_pos_x    = -drive_motor_x;
@@ -491,7 +491,7 @@ module old_drive_side() {
   }
 }
 
-module old_idler_side() {
+module idler_side() {
   idler_hinge_pos_y = -idler_motor_y + hinge_pos_y;
   main_height       = idler_side_height;
 
@@ -651,7 +651,7 @@ module one_piece() {
 
   hobbed_pulley_clearance = hobbed_pulley_diam/2 + 0.5;
 
-  motor_shoulder_clearance = motor_shoulder_height*1.5;
+  motor_shoulder_clearance = motor_shoulder_height + 0.2;
 
   screw_material_thickness = 7;
   screw_head_diam          = 6;
@@ -662,83 +662,40 @@ module one_piece() {
   tensioner_nut_pos_z = -motor_hole_spacing/2-3-6/2;
 
   module body() {
-    for(side=[front,rear]) {
-      hull() {
-        for(y=[left,right]) {
-          for(z=[top]) {
-            translate([0,y*(motor_y+motor_hole_spacing/2),z*motor_hole_spacing/2]) {
-              rotate([0,90,0]) {
-                hole(body_rounded_diam,center_width-2,resolution);
-                hole(body_rounded_diam-1,center_width,resolution);
-              }
-            }
-          }
-          /*
-          translate([-center_width/4,y*(motor_y+motor_hole_spacing/2),-motor_hole_spacing/2-body_rounded_diam/2]) {
-            rotate([0,90,0]) {
-              hole(body_rounded_diam,center_width/2-2,resolution);
-              hole(body_rounded_diam-1,center_width/2,resolution);
-            }
-          }
-          */
-        }
-        for(z=[bottom]) {
-          translate([-center_width/4,side*(motor_y+motor_hole_spacing/2),-motor_hole_spacing/2-body_rounded_diam/2]) {
-            rotate([0,90,0]) {
-              hole(body_rounded_diam,center_width/2-2,resolution);
-              hole(body_rounded_diam-1,center_width/2,resolution);
-            }
-          }
-          translate([0,side*(motor_y+motor_hole_spacing/2),z*motor_hole_spacing/2]) {
-            rotate([0,90,0]) {
-              hole(body_rounded_diam,center_width-2,resolution);
-              hole(body_rounded_diam-1,center_width,resolution);
-            }
-          }
-        }
-      }
-    }
-    /*
-    intersection() {
-      hull() {
-        for(side=[front,rear]) {
-          translate([0,motor_y*side,0]) {
-            rotate([0,90,0]) {
-              hole(motor_diam,center_width,resolution*2);
-            }
-          }
-        }
-      }
-      hull() {
-        for(side=[front,rear]) {
-          translate([0,motor_y*side,0]) {
-            cube([center_width+1,motor_side,motor_side],center=true);
-          }
-        }
-      }
-    }
-    */
-    /*
     hull() {
-      for(diff=[0,1]) {
-        for(side=[front,rear]) {
-          // top of bowden
-          translate([0,side*(bowden_retainer_body_diam/2-rounded_diam/2),bowden_retainer_pos_z+8-rounded_diam/2]) {
-            rotate([0,90,0]) {
-              hole(rounded_diam-diff,center_width-(1-diff)*2,resolution);
-            }
+      for(y=[left,right]) {
+        translate([0,y*(motor_y+motor_hole_spacing/2),motor_hole_spacing/2]) {
+          rotate([0,90,0]) {
+            hole(body_rounded_diam,center_width-2,resolution);
+            hole(body_rounded_diam-1,center_width,resolution);
           }
-
-          // above hobbed pulleys
-          translate([0,side*(bowden_tubing_diam/2+extrusion_width*2),hobbed_pulley_diam/2+rounded_diam/2+1]) {
-            rotate([0,90,0]) {
-              hole(rounded_diam-diff,center_width-(1-diff)*2,resolution);
-            }
-          }
+        }
+        translate([0,y*(motor_y+motor_hole_spacing/2),0]) {
+          cube([center_width,body_rounded_diam-1,1],center=true);
+          cube([center_width-2,body_rounded_diam,1],center=true);
         }
       }
     }
-    */
+    for(y=[left,right]) {
+      hull() {
+        translate([-center_width/4,y*(motor_y+motor_hole_spacing/2),-motor_hole_spacing/2-body_rounded_diam/2]) {
+          rotate([0,90,0]) {
+            hole(body_rounded_diam,center_width/2-2,resolution);
+            hole(body_rounded_diam-1,center_width/2,resolution);
+          }
+        }
+        translate([0,y*(motor_y+motor_hole_spacing/2),-motor_hole_spacing/2]) {
+          rotate([0,90,0]) {
+            hole(body_rounded_diam,center_width-2,resolution);
+            hole(body_rounded_diam-1,center_width,resolution);
+          }
+        }
+        translate([0,y*(motor_y+motor_hole_spacing/2),0]) {
+          cube([center_width,body_rounded_diam-1,1],center=true);
+          cube([center_width-2,body_rounded_diam,1],center=true);
+        }
+      }
+    }
   }
 
   module holes() {
@@ -794,26 +751,6 @@ module one_piece() {
             }
           }
         }
-        // round main opening
-        //translate([0,motor_y+motor_hole_spacing/2-body_rounded_diam/2,-motor_side/2-rounded_diam*1.5]) {
-        /*
-        translate([0,motor_y+motor_hole_spacing/2-body_rounded_diam/2,-motor_hole_spacing/2-body_rounded_diam]) {
-          rotate([90,0,0]) {
-            rotate([0,90,0]) {
-              cut_rounded_corner(body_rounded_diam);
-            }
-          }
-        }
-        */
-        /*
-        translate([0,hinge_gap_pos_y+hinge_gap_width/2,-motor_side/2]) {
-          rotate([90,0,0]) {
-            rotate([0,90,0]) {
-              cut_rounded_corner(rounded_diam);
-            }
-          }
-        }
-        */
       }
     }
 
@@ -844,28 +781,7 @@ module one_piece() {
           }
         }
       }
-
-      translate([0,side*motor_y,-motor_hole_spacing/2]) {
-        cube([center_width+1,motor_hole_spacing-body_rounded_diam,motor_hole_spacing],center=true);
-      }
     }
-
-    /*
-    for(side=[front,rear]) {
-      translate([center_width*0.25*side,hinge_pos_y*side,hinge_pos_z]) {
-        rotate([0,90,0]) {
-          hole(hinge_hole_diam,center_width+1,resolution);
-        }
-        for(angle=[0,15]) {
-          rotate([angle*side,0,0]) {
-            translate([0,(-hinge_hole_diam/2+hinge_arm_thickness/2)*side,-motor_side/2]) {
-              cube([center_width+1,hinge_arm_thickness,motor_side],center=true);
-            }
-          }
-        }
-      }
-    }
-    */
   }
 
   module bridges() {
@@ -900,18 +816,5 @@ module one_piece() {
 
   color("lightblue") {
     bridges();
-  }
-}
-
-module side() {
-}
-
-module idler_side() {
-  side();
-}
-
-module drive_side() {
-  mirror([0,0,0]) {
-    //side();
   }
 }

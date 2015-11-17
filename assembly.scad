@@ -31,7 +31,7 @@ module assembly() {
     translate([0.05,0,0]) {
       position_drive_motor() {
         if (show_motors) {
-          //% motor();
+          % motor();
         }
 
         translate([0,0,drive_motor_x]) {
