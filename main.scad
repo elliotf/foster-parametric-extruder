@@ -662,6 +662,7 @@ module one_piece() {
   tensioner_nut_pos_z = -motor_hole_spacing/2-3-6/2;
 
   module body() {
+    side_arm_width = 0.5*(motor_side - motor_shoulder_diam - 1);
     hull() {
       for(y=[left,right]) {
         translate([0,y*(motor_y+motor_hole_spacing/2),motor_hole_spacing/2]) {
@@ -690,9 +691,11 @@ module one_piece() {
             hole(body_rounded_diam-1,center_width,resolution);
           }
         }
-        translate([0,y*(motor_y+motor_hole_spacing/2),0]) {
-          cube([center_width,body_rounded_diam-1,1],center=true);
-          cube([center_width-2,body_rounded_diam,1],center=true);
+        translate([0,y*(motor_y+motor_side/2-side_arm_width/2),0]) {
+          translate([0,0.25*-y,0]) {
+            cube([center_width,side_arm_width-0.5,1],center=true);
+          }
+          cube([center_width-2,side_arm_width,1],center=true);
         }
       }
     }
